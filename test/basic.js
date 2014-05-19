@@ -3,8 +3,8 @@ var should = require('should');
 
 var utils  = require('./fixtures/utils');
 var PATH   = path.join(__dirname, 'basic-test');
-var Faker  = require('../index');
-var can, faker;
+var Filler  = require('../index');
+var can, filler;
 
 var times = function (x, fn) {
   do { fn(); } while(--x > 0);
@@ -12,7 +12,7 @@ var times = function (x, fn) {
 
 function init () {
   can   = require('./fixtures/can')(PATH);
-  faker = new Faker(can, {
+  filler = new Filler(can, {
     lang: 'cn',
     tables: {
       site              :  1,
@@ -22,7 +22,7 @@ function init () {
   });
 }
 
-describe('faker test', function () {
+describe('filler test', function () {
 
   before(function () {
     init();
@@ -35,7 +35,7 @@ describe('faker test', function () {
   it('site table test', function () {
 
     times(10, function () {
-      var data = faker.assemble('site');
+      var data = filler.assemble('site');
       
       //console.log(data);
       data.should.have.property('adminUser');
@@ -47,14 +47,14 @@ describe('faker test', function () {
       should(['root', 'adminitrator', 'user', 'editor'].indexOf(data.adminRole) > -1 ).be.ok;
     });
 
-    faker.fill('site');
+    filler.fill('site');
 
   });
 
   it(' articleCategories table test', function () {
 
     times(10, function () {
-      var data = faker.assemble('articleCategories');
+      var data = filler.assemble('articleCategories');
 
       // console.log(data);
       
@@ -65,11 +65,11 @@ describe('faker test', function () {
 
     });
 
-    faker.fill('articleCategories');
+    filler.fill('articleCategories');
   });
 
   it('test getReferenceTableIds', function () {
-    var ids = faker.getReferenceTableIds('articles', '_articleCategory');
+    var ids = filler.getReferenceTableIds('articles', '_articleCategory');
 
     // console.log(ids);
 
@@ -83,7 +83,7 @@ describe('faker test', function () {
   it('articles table test', function () {
 
     times(10, function () {
-      var data = faker.assemble('articles');
+      var data = filler.assemble('articles');
 
       // console.log(data);
 
@@ -94,7 +94,7 @@ describe('faker test', function () {
 
     });
 
-    faker.fill('articles');
+    filler.fill('articles');
   });
 
   it('test db', function () {
@@ -108,7 +108,7 @@ describe('faker test', function () {
 
 });
 
-describe('faker whole db', function () {
+describe('filler whole db', function () {
   
   before(function () {
     init();
@@ -118,9 +118,9 @@ describe('faker whole db', function () {
     utils.clear(PATH, done);
   });
 
-  it('test build', function () {
+  it('test run', function () {
     (function () {
-      faker.build();
+      filler.run();
     }).should.not.throw();  
   });
 

@@ -1,5 +1,5 @@
 {
-  "name": "faker",
+  "name": "filler",
   "version": "0.0.1",
   "description": "fake a whole jsoncan db data accoring to schemas",
   "main": "index.js",
@@ -8,10 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bibig/faker"
+    "url": "https://github.com/bibig/filler"
   },
   "keywords": [
     "fake",
+    "filler",
     "schemas",
     "db"
   ],
@@ -29,7 +30,7 @@
   "author": "bibig@me.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bibig/faker/issues"
+    "url": "https://github.com/bibig/filler/issues"
   },
-  "homepage": "https://github.com/bibig/faker"
+  "homepage": "https://github.com/bibig/filler"
 }

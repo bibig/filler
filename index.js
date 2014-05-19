@@ -1,1 +1,1 @@
-module.exports = require('./libs/faker.js');
+module.exports = require('./libs/filler.js');

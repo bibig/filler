@@ -1,4 +1,4 @@
-module.exports = Faker;
+module.exports = Filler;
 
 var rander = require('rander');
 var yi     = require('yi');
@@ -9,7 +9,7 @@ var myna   = require('myna')({
 });
 
 
-function Faker (can, config) {
+function Filler (can, config) {
   this.can             = can;
   this.config          = config;
   this.tables          = config.tables;
@@ -18,7 +18,7 @@ function Faker (can, config) {
 }
 
 
-Faker.prototype.build = function () {
+Filler.prototype.run = function () {
   var self = this;
 
   Object.keys(this.tables).forEach(function (name) {
@@ -27,7 +27,7 @@ Faker.prototype.build = function () {
 
 };
 
-Faker.prototype.fill = function (name) {
+Filler.prototype.fill = function (name) {
   var Table = this.can.open(name);
   var count = this.tables[name];
 
@@ -37,7 +37,7 @@ Faker.prototype.fill = function (name) {
 
 };
 
-Faker.prototype.getReferenceTableIds = function (tableName, fieldName) {
+Filler.prototype.getReferenceTableIds = function (tableName, fieldName) {
   var Table = this.can.open(tableName);
   var cacheId = this.getReferenceTableCacheId(tableName, fieldName);
   var refTable, filters = {}, records, field;
@@ -63,12 +63,12 @@ Faker.prototype.getReferenceTableIds = function (tableName, fieldName) {
   return this.reference_caches[cacheId];
 };
 
-Faker.prototype.getReferenceTableCacheId = function (tableName, refFieldName) {
+Filler.prototype.getReferenceTableCacheId = function (tableName, refFieldName) {
   return tableName + refFieldName;
 };
 
 
-Faker.prototype.checkFieldValues = function (field) {
+Filler.prototype.checkFieldValues = function (field) {
 
   if ( yi.isEmpty(field.values)) {
     throw myna.speak(100, name);
@@ -76,7 +76,7 @@ Faker.prototype.checkFieldValues = function (field) {
 
 };
 
-Faker.prototype.assemble = function (tableName) {
+Filler.prototype.assemble = function (tableName) {
   var Table = this.can.open(tableName);
   var self = this;
   var data = {};
