@@ -3,8 +3,12 @@ var should = require('should');
 
 var utils  = require('./fixtures/utils');
 var PATH   = path.join(__dirname, 'basic-test');
-var Filler  = require('../index');
+var Filler = require('../index');
+var fs     = require('fs');
 var can, filler;
+
+var imagesPath = path.join(__dirname, './fixtures/uploads');
+var thumbsPath = path.join(__dirname, './fixtures/uploads/thumbs');
 
 var times = function (x, fn) {
   do { fn(); } while(--x > 0);
@@ -14,15 +18,20 @@ function init () {
   can   = require('./fixtures/can')(PATH);
   filler = new Filler(can, {
     lang: 'cn',
+    image_resources: path.join(__dirname, './fixtures/images'),
     tables: {
       site              :  1,
       articleCategories : 20,
-      articles          : 50
+      articles          : 50,
+      articleImages     : 10
     }
   });
 }
 
 describe('filler test', function () {
+  
+
+  this.timeout(15000);
 
   before(function () {
     init();
@@ -32,7 +41,7 @@ describe('filler test', function () {
     utils.clear(PATH, done);
   });
 
-  it('site table test', function () {
+  it('test assemble', function () {
 
     times(10, function () {
       var data = filler.assemble('site');
@@ -47,8 +56,13 @@ describe('filler test', function () {
       should(['root', 'adminitrator', 'user', 'editor'].indexOf(data.adminRole) > -1 ).be.ok;
     });
 
-    filler.fill('site');
+  });
 
+  it('test fill site', function (done) {
+    filler.fill('site', function (e) {
+      should.not.exist(e);
+      done();
+    });    
   });
 
   it(' articleCategories table test', function () {
@@ -65,7 +79,13 @@ describe('filler test', function () {
 
     });
 
-    filler.fill('articleCategories');
+  });
+
+  it('test fill articleCategories', function (done) {
+    filler.fill('articleCategories', function (e) {
+      should.not.exist(e);
+      done();
+    });
   });
 
   it('test getReferenceTableIds', function () {
@@ -94,10 +114,36 @@ describe('filler test', function () {
 
     });
 
-    filler.fill('articles');
   });
 
-  it('test db', function () {
+  it('test fill articles', function (done) {
+    filler.fill('articles', function (e) {
+      should.not.exist(e);
+      done();
+    });    
+  });
+
+  it('test fill articleImages', function (done) {
+    filler.fill('articleImages', function (e) {
+      should.not.exist(e);
+      done();
+    });    
+  });
+
+  it('check upload images', function () {
+    fs.readdirSync(imagesPath).length.should.eql(10 + 1); // don't forget the thumbs fold
+    fs.readdirSync(thumbsPath).length.should.eql(20);
+  });
+
+  it('clear test images', function (done) {
+    utils.clear(imagesPath + '/*', done);
+  });
+
+  it('clear thumbs images', function (done) {
+    utils.clear(thumbsPath + '/*', done);
+  });
+
+  it('check db', function () {
     var site = can.open('site').query().execSync();
     var articles = can.open('articles').query().execSync();
     
@@ -106,36 +152,4 @@ describe('filler test', function () {
 
   });
 
-});
-
-describe('filler whole db', function () {
-  
-  before(function () {
-    init();
-  });
-
-  after(function (done) {
-    utils.clear(PATH, done);
-  });
-
-  it('test run', function () {
-    (function () {
-      filler.run();
-    }).should.not.throw();  
-  });
-
-  it('test result', function () {
-    var site              = can.open('site').query().execSync();
-    var articleCategories = can.open('articleCategories').query().execSync();
-    var articles          = can.open('articles').query().execSync();
-    
-    // console.log(site);
-    // console.log(articleCategories);
-    // console.log(articles);
-
-    should(site.length).eql(1);
-    should(articleCategories.length).eql(20);
-    should(articles.length).eql(50);
-  });
-  
 });

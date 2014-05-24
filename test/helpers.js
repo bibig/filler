@@ -3,8 +3,7 @@ var should = require('should');
 var helpers = require('../libs/helpers');
 //var Faker = require('../index');
 
-describe('string unit test', function () {
-
+describe('string/text unit test', function () {
 
   it('test string', function () {
     var field = {
@@ -42,6 +41,17 @@ describe('string unit test', function () {
     // console.log(str);
 
     should(str.length).within(field.min, field.max);
+
+  });
+
+  it('test text ', function () {
+    var field = {
+      inputType: 'rich_textarea'
+    };
+    var str = helpers.text(field, 'en');
+    
+
+    should(str.length).above(1000);
 
   });
 

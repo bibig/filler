@@ -1,11 +1,12 @@
 exports.numeric      = numeric;
 exports.alphanumeric = alphanumeric;
+exports.text         = text;
 exports.string       = string;
 exports.integer      = integer;
 exports.float        = float;
 exports.email        = email;
 exports.date         = date;
-exports.datetime     =datetime;
+exports.datetime     = datetime;
 exports.timestamp    = timestamp;
 
 var rander = require('rander');
@@ -23,6 +24,40 @@ function numeric (field) {
 
   return rander.number(rander.between(min, max)); 
 }
+
+function text (field, lang) {
+  var str = '';
+  var mice = require('mice')(lang || 'cn');
+  var min = field.min || 0;
+  var max = field.max;
+  var size = rander.between(5, 25);
+
+  function tail (inputType) {
+    switch (inputType) {
+      case 'rich_textarea':
+        return mice.paragraphs(size, ['<p>', '</p>']);
+      default:
+        return mice.paragraphs(size);
+    }  
+  }
+
+  str += tail(field.inputType);
+
+  if (min) {
+    while (str.length < min) {
+      str += tail(field.inputType);
+    }  
+  }
+
+  if (max) {
+    if (str.length > max) {
+      str = str.substring(0, max - 1);
+    }  
+  }
+
+  return str;
+}
+
 
 function string (field, lang) {
   var str = '';
@@ -91,12 +126,12 @@ function date () {
 
 function datetime () {
   var currentYear = new Date().getFullYear();
-  var y = rander.between(currentYear - 20, currentYear);
-  var m = rander.dice(11);
-  var d = rander.dice(31);
-  var hh = rander.dice(59);
-  var mm = rander.dice(59);
-  var ss = rander.dice(59);
+  var y           = rander.between(currentYear - 20, currentYear);
+  var m           = rander.dice(11);
+  var d           = rander.dice(31);
+  var hh          = rander.dice(59);
+  var mm          = rander.dice(59);
+  var ss          = rander.dice(59);
 
   return new Date(y, m, d, hh, mm, ss);
 }
@@ -104,4 +139,3 @@ function datetime () {
 function timestamp () {
   return datetime().getTime();
 }
-

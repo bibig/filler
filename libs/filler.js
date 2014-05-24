@@ -1,39 +1,96 @@
 module.exports = Filler;
 
-var rander = require('rander');
-var yi     = require('yi');
-var helpers  = require('./helpers');
-var myna   = require('myna')({
+var rander     = require('rander');
+var yi         = require('yi');
+var helpers    = require('./helpers');
+var Eventchain = require('eventchain');
+var Upload     = require('./upload');
+var async      = require('async');
+var myna       = require('myna')({
   100: 'the field <%s> need values definition',
   101: 'no record found in the reference table <%s>'
 });
 
 
 function Filler (can, config) {
-  this.can             = can;
-  this.config          = config;
-  this.tables          = config.tables;
+  this.can              = can;
+  this.config           = config;
+  this.image_resources  = config.image_resources;
+  this.tables           = config.tables;
   this.reference_caches = {};
-  this.mice            = require('mice')(config.lang || 'cn');
+  this.lang             = config.lang || 'cn';
+
 }
 
-
-Filler.prototype.run = function () {
-  var self = this;
-
-  Object.keys(this.tables).forEach(function (name) {
-    self.fill(name);
-  });
-
+Filler.prototype.run = function (callback) {
+  async.eachSeries(Object.keys(this.tables), this.fill.bind(this), callback);
 };
 
-Filler.prototype.fill = function (name) {
-  var Table = this.can.open(name);
+
+Filler.prototype.fill = function (name, callback) {
   var count = this.tables[name];
+  var self = this;
+  var tasks = [];
 
   do {
-    Table.insertSync(this.assemble(name));
-  } while (--count > 0);
+    tasks.push(name);
+  } while (--count > 0)
+
+  async.eachSeries(tasks, this.fillOne.bind(this), callback);
+};
+
+Filler.prototype.fillOne = function (name, callback) {
+  var self  = this;
+  var Table = this.can.open(name);
+  var ec    = Eventchain.create();
+
+  function getImageFields () {
+    var fields = {};
+
+    Table.schemas.forEachField(function (name, field) {
+
+      if (field.isImage) {
+        fields[name] = field;  
+      }
+      
+    });
+
+    return fields;
+  }
+
+  ec.add(function (name, next) {
+    next(null, self.assemble(name));
+  });
+
+  ec.add(function (data, next) {
+    var fields = getImageFields();
+    var upload;
+
+    if (yi.isEmpty(fields)) {
+      return next(null, data);
+    }
+
+    upload = Upload(fields, self.image_resources);
+    upload.run(function (e) {
+      if (e) {
+        return next(e);
+      }
+
+      if (yi.isNotEmpty(upload.req.fala.errors)) {
+        console.warn(upload.req.fala);
+        return next(new Error('upload images failed'));
+      }
+
+      yi.merge(data, upload.req.fala.data);
+      next(e, data);
+    });
+  });
+
+  ec.add(function (data, next) {
+    Table.insert(data, next);
+  });
+
+  ec.emit(name, callback);
 
 };
 
@@ -66,7 +123,6 @@ Filler.prototype.getReferenceTableIds = function (tableName, fieldName) {
 Filler.prototype.getReferenceTableCacheId = function (tableName, refFieldName) {
   return tableName + refFieldName;
 };
-
 
 Filler.prototype.checkFieldValues = function (field) {
 
@@ -164,11 +220,15 @@ Filler.prototype.assemble = function (tableName) {
         data[name] = null; 
         break;
 
-      case 'image':
+      case 'text':
+        data[name] = helpers.text(field, self.lang);
         break;
 
       default:
-        data[name] = helpers.string(field);
+        if ( ! field.isImage ) {
+          data[name] = helpers.string(field, self.lang);  
+        }
+        
     }
   });
 

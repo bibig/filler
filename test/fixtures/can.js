@@ -87,20 +87,20 @@ var tables = {
       rows: 4
     },
     content: {
-      type: 'string',
+      type: 'text',
       required: true,
       isInput: true,
       inputType: 'rich_textarea'
     },
     isPublic: { 
       type: 'boolean',
-      default: true, 
+      default: false, 
       isInput: true, 
       inputType: 'checkbox'
     },
     hasImages: {
       type: 'boolean',
-      default: false,
+      default: true,
       isInput: true, 
       inputType: 'checkbox'
     },
@@ -164,15 +164,16 @@ var tables = {
       inputType: 'file',
       inputHelp: 'Please upload images under 4m',
       isImage: true,
-      path: path.join(__dirname, './uploads/articles'), 
-      url: '/uploads/articles/',
-      maxFileSize: 70000,
+      path: path.join(__dirname, './uploads'),
+      url: '/uploads/',
+      maxFileSize: 1200000,
       exts: ['jpg', 'jpeg', 'gif', 'png'],
       sizeField: 'size',
       // cropImage: 'Center',
       // isFixedSize: true,
       imageSize: [600, 400],
-      thumbSize: [100],
+      thumbs: ['100x100', '50x50'],
+      // thumbSize: [100],
       hasThumb: true,
       thumbPath: false // use default
     },
