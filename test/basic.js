@@ -17,9 +17,10 @@ var times = function (x, fn) {
 function init () {
   can   = require('./fixtures/can')(PATH);
   filler = new Filler(can, {
-    lang: 'cn',
-    image_resources: path.join(__dirname, './fixtures/images'),
-    tables: {
+    reset  : true,
+    lang   : 'cn',
+    images : path.join(__dirname, './fixtures/images'),
+    tables : {
       site              :  1,
       articleCategories : 20,
       articles          : 50,

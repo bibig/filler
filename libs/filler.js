@@ -15,7 +15,7 @@ var myna       = require('myna')({
 function Filler (can, config) {
   this.can              = can;
   this.config           = config;
-  this.image_resources  = config.image_resources;
+  this.images           = config.images;
   this.tables           = config.tables;
   this.reference_caches = {};
   this.lang             = config.lang || 'cn';
@@ -23,7 +23,17 @@ function Filler (can, config) {
 }
 
 Filler.prototype.run = function (callback) {
-  async.eachSeries(Object.keys(this.tables), this.fill.bind(this), callback);
+  var self = this;
+  var exec = function () {
+    async.eachSeries(Object.keys(self.tables), self.fill.bind(self), callback);  
+  };
+
+  if (this.config.reset === true) {
+    this.can.clear(exec);
+  } else {
+    exec();
+  }
+
 };
 
 
@@ -34,7 +44,7 @@ Filler.prototype.fill = function (name, callback) {
 
   do {
     tasks.push(name);
-  } while (--count > 0)
+  } while (--count > 0);
 
   async.eachSeries(tasks, this.fillOne.bind(this), callback);
 };
@@ -70,7 +80,7 @@ Filler.prototype.fillOne = function (name, callback) {
       return next(null, data);
     }
 
-    upload = Upload(fields, self.image_resources);
+    upload = Upload(fields, self.images);
     upload.run(function (e) {
       if (e) {
         return next(e);
