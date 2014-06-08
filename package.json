@@ -1,6 +1,6 @@
 {
   "name": "filler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "fake a whole jsoncan db data accoring to schemas",
   "main": "index.js",
   "scripts": {

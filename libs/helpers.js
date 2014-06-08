@@ -12,17 +12,15 @@ exports.timestamp    = timestamp;
 var rander = require('rander');
 
 function alphanumeric (field) {
-  var min = field.min || 1;
-  var max = field.max || 100;
+  var size = field.size || rander.between(field.min || 1, field.max || 100);
 
-  return rander.string(rander.between(min, max));
+  return rander.string(size);
 }
 
 function numeric (field) {
-  var min = field.min || 1;
-  var max = field.max || 100;
+  var size = field.size || rander.between(field.min || 1, field.max || 100);
 
-  return rander.number(rander.between(min, max)); 
+  return rander.number(size); 
 }
 
 function text (field, lang) {
