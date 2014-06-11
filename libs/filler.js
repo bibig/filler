@@ -152,7 +152,7 @@ Filler.prototype.assemble = function (tableName) {
   Table.schemas.forEachField(function (name, field) {
     var lang, values;
 
-    if ( ! field.required || field.default !== undefined || field.isImage || field.type === 'random' || ['created', 'modified'].indexOf(name) > -1 ) { return; }
+    if (field.isImage) { return; }
 
     values = settings[name];
     if (yi.isNotEmpty(values)) {
@@ -163,6 +163,9 @@ Filler.prototype.assemble = function (tableName) {
       }
       return;
     }
+
+    if ( ! field.required || field.default !== undefined || field.type === 'random' || ['created', 'modified'].indexOf(name) > -1 ) { return; }
+    
 
     lang = field.lang || self.lang; 
 

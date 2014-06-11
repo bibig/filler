@@ -16,13 +16,11 @@ function Upload (fields, settings, default_image_resources) {
   this.fields                  = fields;
   this.settings                = settings;
   this.default_image_resources = default_image_resources;
-  this.fala            = require('fala')({
+  this.fala                    = require('fala')({
     fields: fields
   });
 
   this.req = { files: {}};
-
-  
 }
 
 Upload.prototype.forEachField = function (callback) {
