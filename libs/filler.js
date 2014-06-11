@@ -16,7 +16,8 @@ function Filler (can, config) {
   this.can              = can;
   this.config           = config;
   this.images           = config.images;
-  this.tables           = config.tables;
+  this.quantity         = config.quantity;
+  this.tables           = config.tables || {};
   this.reference_caches = {};
   this.lang             = config.lang || 'cn';
 
@@ -25,7 +26,7 @@ function Filler (can, config) {
 Filler.prototype.run = function (callback) {
   var self = this;
   var exec = function () {
-    async.eachSeries(Object.keys(self.tables), self.fill.bind(self), callback);  
+    async.eachSeries(Object.keys(self.quantity), self.fill.bind(self), callback);  
   };
 
   if (this.config.reset === true) {
@@ -36,9 +37,8 @@ Filler.prototype.run = function (callback) {
 
 };
 
-
 Filler.prototype.fill = function (name, callback) {
-  var count = this.tables[name];
+  var count = this.quantity[name];
   var self = this;
   var tasks = [];
 
@@ -50,9 +50,10 @@ Filler.prototype.fill = function (name, callback) {
 };
 
 Filler.prototype.fillOne = function (name, callback) {
-  var self  = this;
-  var Table = this.can.open(name);
-  var ec    = Eventchain.create();
+  var self     = this;
+  var Table    = this.can.open(name);
+  var ec       = Eventchain.create();
+  var settings = this.tables[name] || {};
 
   function getImageFields () {
     var fields = {};
@@ -80,7 +81,7 @@ Filler.prototype.fillOne = function (name, callback) {
       return next(null, data);
     }
 
-    upload = Upload(fields, self.images);
+    upload = Upload(fields, settings, self.images);
     upload.run(function (e) {
       if (e) {
         return next(e);
@@ -143,12 +144,27 @@ Filler.prototype.checkFieldValues = function (field) {
 };
 
 Filler.prototype.assemble = function (tableName) {
-  var Table = this.can.open(tableName);
-  var self = this;
-  var data = {};
+  var Table    = this.can.open(tableName);
+  var self     = this;
+  var data     = {};
+  var settings = this.tables[tableName] || {};
 
   Table.schemas.forEachField(function (name, field) {
-    if ( ! field.required || field.default !== undefined || field.type === 'random' || ['created', 'modified'].indexOf(name) > -1 ) { return; }
+    var lang, values;
+
+    if ( ! field.required || field.default !== undefined || field.isImage || field.type === 'random' || ['created', 'modified'].indexOf(name) > -1 ) { return; }
+
+    values = settings[name];
+    if (yi.isNotEmpty(values)) {
+      if (Array.isArray(values)) {
+        data[name] = rander.element(values);
+      } else {
+        data[name] = values;
+      }
+      return;
+    }
+
+    lang = field.lang || self.lang; 
 
     switch (field.type) {
       case 'int':
@@ -220,8 +236,6 @@ Filler.prototype.assemble = function (tableName) {
       case 'url':
       case 'uuid':
       case 'alpha':
-      case 'numeric':
-      
       case 'ip': // same as ip4
       case 'ip4':
       case 'ip6':
@@ -231,13 +245,11 @@ Filler.prototype.assemble = function (tableName) {
         break;
 
       case 'text':
-        data[name] = helpers.text(field, self.lang);
+        data[name] = helpers.text(field, lang);
         break;
 
       default:
-        if ( ! field.isImage ) {
-          data[name] = helpers.string(field, self.lang);  
-        }
+        data[name] = helpers.string(field, lang);
         
     }
   });

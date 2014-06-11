@@ -63,6 +63,10 @@ function string (field, lang) {
   var min = field.min || 1;
   var max = field.max || 1500;
 
+  if (field.dictionary) {
+    return rander.pickup(rander.between(min, max), field.dictionary);
+  }
+
   function tail (inputType) {
     switch (inputType) {
       case 'rich_textarea':

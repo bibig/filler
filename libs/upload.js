@@ -8,13 +8,14 @@ var async      = require('async');
 var utils      = require('./utils');
 var Eventchain = require('eventchain');
 
-function  create (fields, image_resources) {
-  return new Upload (fields, image_resources);
+function  create (fields, settings, default_image_resources) {
+  return new Upload (fields, settings, default_image_resources);
 }
 
-function Upload (fields, image_resources) {
-  this.fields = fields;
-  this.image_resources = image_resources;
+function Upload (fields, settings, default_image_resources) {
+  this.fields                  = fields;
+  this.settings                = settings;
+  this.default_image_resources = default_image_resources;
   this.fala            = require('fala')({
     fields: fields
   });
@@ -70,6 +71,7 @@ Upload.prototype.getRandomFile = function (filePath) {
 Upload.prototype.prepareForImageField = function (name, callback) {
   var self = this;
   var ec   = Eventchain.create();
+  var image_resources = this.settings[name] || this.default_image_resources;
 
   // pick up a source image
   ec.add(function (sourcePath, next) {
@@ -98,10 +100,9 @@ Upload.prototype.prepareForImageField = function (name, callback) {
 
   });
 
-  ec.emit(this.image_resources, function (e, file) {
+  ec.emit(image_resources, function (e, file) {
     self.req.files[name] = file;
     callback(e);
   });
 
 };
-

@@ -14,17 +14,25 @@ var times = function (x, fn) {
   do { fn(); } while(--x > 0);
 };
 
+var cats = ['cat1', 'cat2', 'cat3', 'cat4', 'cat5', 'cat6'];
+
 function init () {
   can   = require('./fixtures/can')(PATH);
   filler = new Filler(can, {
-    reset  : true,
-    lang   : 'cn',
-    images : path.join(__dirname, './fixtures/images'),
-    tables : {
+    reset    : true,
+    lang     : 'cn',
+    images   : path.join(__dirname, './fixtures/images'),
+    quantity : {
       site              :  1,
       articleCategories : 20,
       articles          : 50,
       articleImages     : 10
+    },
+    tables: {
+      articleCategories : {
+        name: cats
+      }
+
     }
   });
 }
@@ -75,6 +83,7 @@ describe('filler test', function () {
       
       data.should.have.property('seq');
       data.should.have.property('name');
+      should(cats.indexOf(data.name) > -1).be.ok;
       (data.name.length).should.within(0, 50);
       data.seq.should.within(0, 19);
 

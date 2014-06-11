@@ -15,11 +15,14 @@ function init () {
   filler = new Filler(can, {
     lang: 'cn',
     images: path.join(__dirname, './fixtures/images'),
-    tables: {
+    quantity: {
       site              :  1,
       articleCategories : 20,
       articles          : 50,
       articleImages     : 10
+    },
+    tables: {
+      
     }
   });
 }
